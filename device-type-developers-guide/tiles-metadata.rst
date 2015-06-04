@@ -16,7 +16,7 @@ Tiles are defined inside the metadata block.
 Overview
 --------
 
-The tiles block is composed of tile definitions, and layout information (the ``main`` and ``details`` method). There are three types of tiles that you can use within your device handler. Each tile serves a different purpose.
+The tiles block is composed of tile definitions, and layout information (the ``main`` and ``details`` method).  There are four types of tile definitions that you can use within your device handler ("standardTile", "valueTile", "controlTile", and "carouselTile").  While each type of tile definition -- each described in more detail below -- has a different set of capabilities and purpose, all tile definitions share several common parameters and follow the same general argument conventions.
 
 Consider this example for a switch:
 
@@ -42,21 +42,17 @@ Consider this example for a switch:
         details(["switchTile","powerTile","refreshTile"])
     }
 
+Name and Attribute of Tile
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The first argument to the tile methods is the name of the tile. This is used to identify the tile when specifying the tile layout.
+The first argument in a tile method is the name of the tile. This is used to identify the tile when specifying the tile layout. In the example above, a first *standardTile* is created with the name "switchTile".
 
-The second argument is the attribute this tile is associated with. Each tile is associated with an attribute of the device. 
-
-In the example above, a *standardTile* (more on that later) is created with the name "switchTile", for the "switch" attribute. The convention is to prefix the attribute name with "device" - so the format is "device.<attributeName>".
-
-The switch attribute has two possible values: "on", and "off". Since we want the display to change depending on if the switch is on and off, and we want to allow the user to toggle the switch by pressing the icon, we define a state for each. The ``state`` method allows us to specify display information like icon and background color for each state, as well as specify what action should happen when the tile is pressed in this state. 
-
-The ``state`` method is discussed later in this document.
+The second argument in a tile method is the attribute that the tile is associated with. Each tile must be associated with an attribute of the device. The convention is to prefix the attribute name with "device" - so the format is "device.<attributeName>".  In the example above, the "switchTile" tile is associated with the "switch" attribute through the argument "device.switch".
 
 Common Tile Parameters
 ~~~~~~~~~~~~~~~~~~~~~~
 
-All tiles support the following parameters:
+After the name and associated attribute, a tile definition may optionally include one or more parameters. All tiles support the following parameters:
 
 *width*
     number - controls how wide this tile is. Default is 1.
@@ -73,12 +69,19 @@ All tiles support the following parameters:
 
     You may see device handlers that use the *inactiveLabel* property. This is deprecated and has no effect.
 
+
 State
------
+~~~~~
 
-Each tile can have on more *state* definitions. 
+Finally, a tile definition may contain one or more *state* definitions.  The *state* method is the means by which a tile dynamically changing certain parameters, such as icon and background color.  
 
-Back to our switch example, consider the switch tile definition:
+The first argument in the *state* method should normally be the value of the attribute to which this state applies (there is an exception to this rule discussed below). 
+
+A *state* method can optionally include an *action* argument that identfies the command that should be invoked when the tile is pressed while the associated attribute is in that state.  The value of the *action*` parameter should be the name of the command to be invoked.  The convention is to prefix the command name with the capability - so the format is "<capabilityReference>.<command>".  
+
+A *state* method can also optionally include values of one or more tile parameters for display while the associated attribute is in that state.  This will allow the tile to dynamically change its display. 
+
+Referring back to our switch example above, consider the "switchTile" definition.  
 
 .. code-block:: groovy
 
@@ -90,11 +93,10 @@ Back to our switch example, consider the switch tile definition:
               icon: "st.switches.switch.on", backgroundColor: "#E60000"
     }
 
-The "switch" attribute specifies two possible values - "on" and "off". We define a state for each possible value. The first argument to the ``state`` method should be the value of the attribute this state applies to (there is an exception to this rule discussed below).
+Remember that the "switch" attribute associated with the "switchTile" tile has two possible values: "on" or "off".  So that the user can toggle the switch by pressing the tile icon, the "switchTile" tile contains two state definitions -- one for each possible value.
 
-When the switch is off, and the user presses on the tile on their mobile device, we want to turn the switch on. We specify this action using the ``action`` parameter. 
+When the switch is in the "off" state, and the user presses on the "switchTile" tile on their mobile device, the "on()" commandshould be called.  Thus, the "off" state specifies the *action* parameter to be "switch.on".   In a similar manner, the "on" state specifies the *action* parameter to be "switch.off" in order to turn the device off.  Finally, so that the user can determine what state the device is in, each state specifies a different value for the *icon* and the *backgroundColor* parameters.
 
-The value of the ``action`` parameter should be the name of the command to invoke. The convention is to prefix the command name with the capability, so in the example above we have "switch.on".
 
 State Selection
 ~~~~~~~~~~~~~~~
@@ -126,7 +128,7 @@ The valid parameters are:
 
 .. note::
 
-    The example above uses some attributes within our state method. We use the ``name`` and ``currentValue`` attributes to make our state definition more dynamic.
+    The state definition example above uses two device attributes -- the ``name`` and ``currentValue`` attributes -- within the state method in order to make the tile label more dynamic.  
 
 
 Tile Definitions
